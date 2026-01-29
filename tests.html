@@ -1,0 +1,296 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>Movie Master - Firebase Pro</title>
+    
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;600&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+    <link rel="stylesheet" href="https://cdn.plyr.io/3.7.8/plyr.css" />
+    <script src="https://cdn.jsdelivr.net/npm/hls.js@latest"></script>
+    <script src="https://cdn.plyr.io/3.7.8/plyr.js"></script>
+
+    <style>
+        :root { --primary: #e50914; --bg: #000; --card: #121212; --text: #fff; --plyr-color-main: #e50914; --border: #222; --live-green: #00ff00; }
+        * { box-sizing: border-box; outline: none; -webkit-tap-highlight-color: transparent; }
+        
+        body { font-family: 'Poppins', sans-serif; background: var(--bg); color: var(--text); margin: 0; padding-bottom: 80px; overflow-x: hidden; }
+
+        /* PC par content ko beech mein rakhne ke liye */
+        .app-container {
+            max-width: 1300px;
+            margin: 0 auto;
+            position: relative;
+        }
+
+        header { padding: 0 15px; display: flex; justify-content: flex-start; align-items: center; background: rgba(0,0,0,0.9); position: sticky; top: 0; z-index: 1000; backdrop-filter: blur(10px); height: 60px; border-bottom: 1px solid var(--border); }
+        .logo { color: var(--primary); font-weight: 700; font-size: 20px; letter-spacing: 1px; }
+
+        /* Slider - Mobile par purana size, PC par set */
+        .slider-container { width: 100%; height: 210px; position: relative; overflow: hidden; background: #000; }
+        @media (min-width: 768px) { .slider-container { height: 400px; } }
+        
+        .slider-track { display: flex; transition: transform 0.6s ease; height: 100%; }
+        .slide { min-width: 100%; height: 100%; position: relative; }
+        .slide img { width: 100%; height: 100%; object-fit: cover; }
+        .slide-overlay { position: absolute; bottom: 0; left: 0; width: 100%; height: 60%; background: linear-gradient(transparent, var(--bg)); }
+        .slider-dots { position: absolute; bottom: 15px; left: 50%; transform: translateX(-50%); display: flex; gap: 6px; z-index: 10; }
+        .dot { width: 6px; height: 6px; background: rgba(255,255,255,0.3); border-radius: 50%; transition: 0.3s; }
+        .dot.active { background: var(--primary); width: 16px; border-radius: 10px; }
+        
+        .section-header { display: flex; justify-content: space-between; align-items: center; padding: 0 15px; margin-top: 25px; }
+        .section-title { font-size: 14px; border-left: 3px solid var(--primary); padding-left: 10px; font-weight: 600; text-transform: uppercase; }
+        .view-all-btn { font-size: 11px; color: var(--primary); cursor: pointer; font-weight: 600; background: rgba(229, 9, 20, 0.1); padding: 4px 10px; border-radius: 4px; }
+        
+        .movie-scroll { display: flex; gap: 12px; overflow-x: auto; padding: 15px; scrollbar-width: none; }
+        .movie-scroll::-webkit-scrollbar { display: none; }
+        
+        .card-rect { min-width: 110px; border-radius: 8px; overflow: hidden; background: var(--card); border: 1px solid var(--border); cursor: pointer; }
+        .card-rect img { width: 100%; height: 160px; object-fit: cover; }
+        .card-rect p { margin: 6px; font-size: 10px; text-align: center; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; color: #fff; }
+        
+        /* Grid settings - Mobile par purana 3 column, PC par set */
+        .movie-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 10px; padding: 15px; }
+        @media (min-width: 768px) { .movie-grid { grid-template-columns: repeat(7, 1fr); gap: 15px; } }
+        
+        .live-grid-container { display: grid; grid-template-columns: repeat(4, 1fr); gap: 12px; padding: 15px; }
+        @media (min-width: 768px) { .live-grid-container { grid-template-columns: repeat(10, 1fr); gap: 15px; } }
+
+        .live-item { aspect-ratio: 1/1; border-radius: 50%; overflow: hidden; border: 2px solid var(--live-green); background: var(--card); cursor: pointer; }
+        .live-item img { width: 100%; height: 100%; object-fit: cover; }
+        
+        /* PLAYER SIZE - PC par bada, Mobile par normal */
+        .video-wrapper { width: 100%; background: #000; position: relative; }
+        @media (min-width: 768px) { 
+            .video-wrapper { 
+                max-width: 1000px; 
+                margin: 20px auto; 
+                aspect-ratio: 16/9; 
+                border: 1px solid #333;
+                border-radius: 8px;
+                overflow: hidden;
+            } 
+        }
+
+        .full-page { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: var(--bg); z-index: 2000; display: none; overflow-y: auto; padding-bottom: 80px; }
+        .page-header { padding: 15px; display: flex; align-items: center; gap: 15px; background: #000; position: sticky; top: 0; z-index: 2100; border-bottom: 1px solid #222; height: 60px; }
+        
+        #videoPage { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: #000; z-index: 3000; display: none; overflow-y: auto; }
+        
+        .bottom-nav { position: fixed; bottom: 0; width: 100%; background: #000; display: flex; justify-content: space-around; padding: 10px 0; border-top: 1px solid var(--border); z-index: 1500; height: 70px; }
+        /* PC par bottom nav center */
+        @media (min-width: 768px) { .bottom-nav { left: 50%; transform: translateX(-50%); max-width: 1300px; } }
+
+        .nav-item { text-align: center; color: #666; font-size: 10px; flex: 1; display: flex; flex-direction: column; align-items: center; justify-content: center; cursor: pointer;}
+        .nav-item i { font-size: 18px; margin-bottom: 4px; }
+        .nav-item.active { color: var(--primary); }
+        #loader { position: fixed; top:0; left:0; width:100%; height:100%; background:#000; z-index:9999; display:flex; justify-content:center; align-items:center; }
+    </style>
+</head>
+<body>
+
+    <div id="loader"><i class="fa fa-spinner fa-spin" style="color:var(--primary); font-size:30px;"></i></div>
+
+    <div class="app-container">
+        <header id="mainHeader"><div class="logo">MOVIE MASTER</div></header>
+
+        <!-- Home Page -->
+        <div id="homePage" class="page">
+            <div class="slider-container">
+                <div class="slider-track" id="sliderTrack"></div>
+                <div class="slider-dots" id="sliderDots"></div>
+            </div>
+            <div id="homeSections"></div>
+        </div>
+
+        <!-- Live TV Page -->
+        <div id="livePage" class="full-page">
+            <div class="page-header"><i class="fa fa-arrow-left" onclick="backToHome()"></i> <span>Live TV</span></div>
+            <div class="video-wrapper" id="livePlayerWrapper">
+                <div style="height:211px; display:flex; align-items:center; justify-content:center; background:#111; color:#555;">Select a Channel</div>
+            </div>
+            <div class="section-header"><div class="section-title">All Channels</div></div>
+            <div class="live-grid-container" id="liveChannelGrid"></div>
+        </div>
+
+        <!-- Search Page -->
+        <div id="searchPage" class="full-page">
+            <div class="page-header">
+                <i class="fa fa-arrow-left" onclick="backToHome()"></i> 
+                <input type="text" id="searchInput" placeholder="Search Movies or Channels..." style="flex:1; background:#111; border:1px solid #333; color:white; padding:8px 12px; border-radius:8px;" oninput="window.doSearch(this.value)">
+            </div>
+            <div id="searchGrid" class="movie-grid"></div>
+        </div>
+
+        <!-- View All Page -->
+        <div id="viewAllPage" class="full-page">
+            <div class="page-header"><i class="fa fa-arrow-left" onclick="backToHome()"></i> <span id="viewAllTitle">Category</span></div>
+            <div class="movie-grid" id="viewAllGrid"></div>
+        </div>
+
+        <!-- Movie Player Page -->
+        <div id="videoPage">
+            <div class="page-header"><i class="fa fa-arrow-left" onclick="closePlayer()"></i> <span id="playingTitle">Title</span></div>
+            <div class="video-wrapper" id="moviePlayerWrapper"></div>
+        </div>
+
+        <!-- Bottom Navigation -->
+        <div class="bottom-nav">
+            <div class="nav-item active" onclick="showNav('homePage', this)"><i class="fa fa-home"></i>Home</div>
+            <div class="nav-item" onclick="showNav('livePage', this)"><i class="fa fa-tv"></i>Live TV</div>
+            <div class="nav-item" onclick="showNav('searchPage', this)"><i class="fa fa-search"></i>Search</div>
+        </div>
+    </div>
+
+    <script type="module">
+        import { initializeApp } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-app.js";
+        import { getDatabase, ref, onValue } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-database.js";
+
+        const firebaseConfig = {
+            apiKey: "AIzaSyCM74giCqX1S-ofyr0qMhDXplWipXVkVaM",
+            authDomain: "movie-master-pro-21287.firebaseapp.com",
+            databaseURL: "https://movie-master-pro-21287-default-rtdb.firebaseio.com",
+            projectId: "movie-master-pro-21287",
+            storageBucket: "movie-master-pro-21287.firebasestorage.app",
+            messagingSenderId: "613745335466",
+            appId: "1:613745335466:web:06b7c404547e65dfe4c4d3",
+            measurementId: "G-GTLGTP7HL0"
+        };
+
+        const app = initializeApp(firebaseConfig);
+        const db = getDatabase(app);
+
+        window.allMovies = [];
+        window.allChannels = [];
+        let sliders = [], categories = [], globalLimit = 10;
+        let livePlayerInstance = null, moviePlayerInstance = null, hlsLive = null, hlsMovie = null;
+
+        function fetchData() {
+            onValue(ref(db, '/'), (snapshot) => {
+                const data = snapshot.val();
+                if (data) {
+                    window.allMovies = data.movies ? Object.values(data.movies) : [];
+                    window.allChannels = data.channels ? Object.values(data.channels) : [];
+                    sliders = data.sliders ? Object.values(data.sliders) : [];
+                    categories = data.categories ? Object.values(data.categories) : [];
+                    globalLimit = parseInt(data.settings?.limit || 12);
+                    
+                    renderHome();
+                    initSlider();
+                    initLiveChannels();
+                    document.getElementById('loader').style.display = 'none';
+                }
+            });
+        }
+
+        window.playLive = function(url) {
+            if (livePlayerInstance) { livePlayerInstance.destroy(); livePlayerInstance = null; }
+            const wrapper = document.getElementById('livePlayerWrapper');
+            wrapper.innerHTML = `<video id="activeLiveVid" playsinline controls style="width:100%; height:100%"></video>`;
+            const videoElem = document.getElementById('activeLiveVid');
+            const plyrCfg = { controls: ['play-large', 'play', 'progress', 'current-time', 'mute', 'volume', 'settings', 'fullscreen'] };
+
+            if (url.includes('youtube')) {
+                livePlayerInstance = new Plyr(videoElem, plyrCfg);
+                livePlayerInstance.source = { type: 'video', sources: [{ src: url, provider: 'youtube' }] };
+            } else if (url.includes('.m3u8')) {
+                if (Hls.isSupported()) {
+                    hlsLive = new Hls(); hlsLive.loadSource(url); hlsLive.attachMedia(videoElem);
+                    livePlayerInstance = new Plyr(videoElem, plyrCfg);
+                } else { videoElem.src = url; livePlayerInstance = new Plyr(videoElem, plyrCfg); }
+            } else { videoElem.src = url; livePlayerInstance = new Plyr(videoElem, plyrCfg); }
+        };
+
+        window.playMovie = function(id) {
+            const m = window.allMovies.find(x => x.id == id);
+            if (!m) return;
+            document.getElementById('videoPage').style.display = 'block';
+            document.getElementById('playingTitle').innerText = m.title || m.name;
+            const wrapper = document.getElementById('moviePlayerWrapper');
+            wrapper.innerHTML = `<video id="activeMovieVid" playsinline controls style="width:100%; height:100%"></video>`;
+            const videoElem = document.getElementById('activeMovieVid');
+            const plyrCfg = { controls: ['play-large', 'play', 'progress', 'current-time', 'mute', 'volume', 'settings', 'fullscreen'] };
+
+            if (m.url.includes('youtube')) {
+                moviePlayerInstance = new Plyr(videoElem, plyrCfg);
+                moviePlayerInstance.source = { type: 'video', sources: [{ src: m.url, provider: 'youtube' }] };
+            } else if (m.url.includes('.m3u8')) {
+                if (Hls.isSupported()) {
+                    hlsMovie = new Hls(); hlsMovie.loadSource(m.url); hlsMovie.attachMedia(videoElem);
+                    moviePlayerInstance = new Plyr(videoElem, plyrCfg);
+                } else { videoElem.src = m.url; moviePlayerInstance = new Plyr(videoElem, plyrCfg); }
+            } else { videoElem.src = m.url; moviePlayerInstance = new Plyr(videoElem, plyrCfg); }
+        };
+
+        window.showNav = function(id, el) {
+            document.querySelectorAll('.page, .full-page').forEach(p => p.style.display = 'none');
+            document.getElementById(id).style.display = 'block';
+            document.querySelectorAll('.nav-item').forEach(n => n.classList.remove('active'));
+            if(el) el.classList.add('active');
+            if (id !== 'livePage' && livePlayerInstance) livePlayerInstance.pause();
+        };
+
+        window.closePlayer = function() {
+            document.getElementById('videoPage').style.display = 'none';
+            if (moviePlayerInstance) { moviePlayerInstance.destroy(); moviePlayerInstance = null; }
+        };
+
+        window.backToHome = function() { window.showNav('homePage', document.querySelector('.nav-item:first-child')); };
+
+        function renderHome() {
+            let html = '';
+            categories.forEach(cat => {
+                const filtered = window.allMovies.filter(m => m.category === cat.name && !m.hidden);
+                if (filtered.length > 0) {
+                    html += `<div class="section-header"><div class="section-title">${cat.name}</div><div class="view-all-btn" onclick="window.openViewAll('${cat.name}')">View All</div></div>
+                             <div class="movie-scroll">${filtered.slice(0, globalLimit).map(m => `<div class="card-rect" onclick="window.playMovie('${m.id}')"><img src="${m.thumb}"><p>${m.title || m.name}</p></div>`).join('')}</div>`;
+                }
+            });
+            document.getElementById('homeSections').innerHTML = html;
+        }
+
+        function initSlider() {
+            const track = document.getElementById('sliderTrack');
+            const dots = document.getElementById('sliderDots');
+            if (!sliders.length) return;
+            track.innerHTML = sliders.map(s => `<div class="slide"><img src="${s.img}"><div class="slide-overlay"></div></div>`).join('');
+            dots.innerHTML = sliders.map((_, i) => `<div class="dot ${i===0?'active':''}"></div>`).join('');
+            let idx = 0;
+            setInterval(() => {
+                idx = (idx + 1) % sliders.length;
+                track.style.transform = `translateX(-${idx * 100}%)`;
+                document.querySelectorAll('.dot').forEach((d, i) => d.classList.toggle('active', i === idx));
+            }, 4000);
+        }
+
+        function initLiveChannels() {
+            document.getElementById('liveChannelGrid').innerHTML = window.allChannels.map(c => `
+                <div class="live-item" onclick="window.playLive('${c.url}')"><img src="${c.thumb}"></div>`).join('');
+        }
+
+        window.openViewAll = function(cat) {
+            document.querySelectorAll('.page, .full-page').forEach(p => p.style.display = 'none');
+            document.getElementById('viewAllPage').style.display = 'block';
+            document.getElementById('viewAllTitle').innerText = cat;
+            document.getElementById('viewAllGrid').innerHTML = window.allMovies.filter(m => m.category === cat && !m.hidden).map(m => `<div class="card-rect" style="min-width:unset" onclick="window.playMovie('${m.id}')"><img src="${m.thumb}"><p>${m.title || m.name}</p></div>`).join('');
+        };
+
+        window.doSearch = function(query) {
+            const q = query.toLowerCase().trim();
+            const grid = document.getElementById('searchGrid');
+            if (!q) { grid.innerHTML = ""; return; }
+            let html = "";
+            window.allChannels.filter(c => (c.name || c.title || "").toLowerCase().includes(q)).forEach(c => {
+                html += `<div style="text-align:center"><div class="live-item" onclick="window.playLive('${c.url}')"><img src="${c.thumb}"></div><p style="font-size:10px;margin-top:5px;color:var(--live-green)">${c.name || c.title}</p></div>`;
+            });
+            window.allMovies.filter(m => (m.title || m.name || "").toLowerCase().includes(q)).forEach(m => {
+                html += `<div class="card-rect" style="min-width:unset" onclick="window.playMovie('${m.id}')"><img src="${m.thumb}"><p>${m.title || m.name}</p></div>`;
+            });
+            grid.innerHTML = html || '<p style="grid-column: 1/-1; text-align:center; padding:50px; color:#555;">No results found.</p>';
+        };
+
+        window.onload = fetchData;
+    </script>
+</body>
+</html>
