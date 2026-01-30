@@ -17,6 +17,16 @@
         body { font-family: 'Poppins', sans-serif; background: var(--bg); color: var(--text); margin: 0; padding-bottom: 80px; overflow-x: hidden; }
         header { padding: 0 15px; display: flex; justify-content: flex-start; align-items: center; background: rgba(0,0,0,0.9); position: sticky; top: 0; z-index: 1000; backdrop-filter: blur(10px); height: 60px; border-bottom: 1px solid var(--border); }
         .logo { color: var(--primary); font-weight: 700; font-size: 20px; letter-spacing: 1px; }
+
+        /* PROFILE PAGE STYLING */
+        .profile-card { background: var(--card); border-radius: 15px; padding: 30px 20px; text-align: center; margin: 20px; border: 1px solid var(--border); }
+        .profile-img { width: 100px; height: 100px; border-radius: 50%; border: 3px solid var(--primary); margin-bottom: 15px; }
+        .user-name { font-size: 18px; font-weight: 600; margin-bottom: 5px; }
+        .user-email { font-size: 13px; color: #888; margin-bottom: 20px; }
+        .login-google-btn { background: #fff; color: #000; border: none; padding: 12px 20px; border-radius: 8px; font-weight: 600; display: flex; align-items: center; gap: 10px; margin: 0 auto; cursor: pointer; }
+        .logout-btn { background: rgba(225, 9, 20, 0.1); color: var(--primary); border: 1px solid var(--primary); padding: 8px 20px; border-radius: 8px; cursor: pointer; margin-top: 10px; }
+
+        /* Rest of Original CSS */
         .slider-container { width: 100%; height: 210px; position: relative; overflow: hidden; background: #000; }
         .slider-track { display: flex; transition: transform 0.6s ease; height: 100%; }
         .slide { min-width: 100%; height: 100%; position: relative; }
@@ -33,48 +43,18 @@
         .card-rect { min-width: 110px; border-radius: 8px; overflow: hidden; background: var(--card); border: 1px solid var(--border); }
         .card-rect img { width: 100%; height: 160px; object-fit: cover; }
         .card-rect p { margin: 6px; font-size: 10px; text-align: center; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; color: #fff; }
-        
-        /* LIVE BORDER ANIMATION - Only Colors Rotate */
-        @keyframes rotateBorder {
-            0% { transform: rotate(0deg); }
-            100% { transform: rotate(360deg); }
-        }
-
+        @keyframes rotateBorder { 0% { transform: rotate(0deg); } 100% { transform: rotate(360deg); } }
         .live-grid-container { display: grid; grid-template-columns: repeat(4, 1fr); gap: 12px; padding: 15px; }
-        
-        .live-item { 
-            position: relative;
-            aspect-ratio: 1/1; 
-            border-radius: 50%; 
-            display: flex; align-items: center; justify-content: center;
-            background: #000;
-            overflow: hidden; 
-            cursor: pointer; 
-            border: none; /* remove old border */
-        }
-        
-        .live-item::before {
-            content: "";
-            position: absolute;
-            width: 150%; height: 150%;
-            background: conic-gradient(#ff0000, #ff7300, #fffb00, #48ff00, #00ffd5, #002bff, #7a00ff, #ff00c8, #ff0000);
-            animation: rotateBorder 3s linear infinite;
-        }
-
-        .live-item img { 
-            width: 90%; height: 90%; 
-            object-fit: cover; 
-            border-radius: 50%;
-            z-index: 1; /* Keep logo above rotating colors */
-            background: #000;
-        }
-
+        .live-item { position: relative; aspect-ratio: 1/1; border-radius: 50%; display: flex; align-items: center; justify-content: center; background: #000; overflow: hidden; cursor: pointer; border: none; }
+        .live-item::before { content: ""; position: absolute; width: 150%; height: 150%; background: conic-gradient(#ff0000, #ff7300, #fffb00, #48ff00, #00ffd5, #002bff, #7a00ff, #ff00c8, #ff0000); animation: rotateBorder 3s linear infinite; }
+        .live-item img { width: 90%; height: 90%; object-fit: cover; border-radius: 50%; z-index: 1; background: #000; }
         .full-page { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: var(--bg); z-index: 2000; display: none; overflow-y: auto; padding-bottom: 80px; }
         .page-header { padding: 15px; display: flex; align-items: center; gap: 15px; background: #000; position: sticky; top: 0; z-index: 2100; border-bottom: 1px solid #222; height: 60px; }
         .movie-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 10px; padding: 15px; }
-        
         #videoPage { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: #000; z-index: 3000; display: none; overflow-y: auto; }
         .video-wrapper { width: 100%; background: #000; min-height: 211px; position: relative; }
+        
+        /* Updated Navigation */
         .bottom-nav { position: fixed; bottom: 0; width: 100%; background: #000; display: flex; justify-content: space-around; padding: 10px 0; border-top: 1px solid var(--border); z-index: 1500; height: 70px; }
         .nav-item { text-align: center; color: #666; font-size: 10px; flex: 1; display: flex; flex-direction: column; align-items: center; justify-content: center; cursor: pointer;}
         .nav-item i { font-size: 18px; margin-bottom: 4px; }
@@ -96,6 +76,15 @@
         <div id="homeSections"></div>
     </div>
 
+    <!-- NEW PROFILE PAGE -->
+    <div id="profilePage" class="full-page">
+        <div class="page-header"><i class="fa fa-arrow-left" onclick="window.backToHome()"></i> <span>My Profile</span></div>
+        <div id="profileContent">
+            <!-- Content will be dynamic from JS -->
+        </div>
+    </div>
+
+    <!-- Rest of the pages -->
     <div id="livePage" class="full-page">
         <div class="page-header"><i class="fa fa-arrow-left" onclick="window.backToHome()"></i> <span>Live TV</span></div>
         <div class="video-wrapper" id="livePlayerWrapper"><div style="height:211px; display:flex; align-items:center; justify-content:center; background:#111; color:#555;">Select a Channel</div></div>
@@ -120,15 +109,18 @@
         <div class="video-wrapper" id="moviePlayerWrapper"></div>
     </div>
 
+    <!-- UPDATED BOTTOM NAV -->
     <div class="bottom-nav">
         <div class="nav-item active" onclick="window.showNav('homePage', this)"><i class="fa fa-home"></i>Home</div>
         <div class="nav-item" onclick="window.showNav('livePage', this)"><i class="fa fa-tv"></i>Live TV</div>
         <div class="nav-item" onclick="window.showNav('searchPage', this)"><i class="fa fa-search"></i>Search</div>
+        <div class="nav-item" onclick="window.showNav('profilePage', this)"><i class="fa fa-user"></i>Profile</div>
     </div>
 
     <script type="module">
         import { initializeApp } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-app.js";
         import { getDatabase, ref, onValue } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-database.js";
+        import { getAuth, signInWithPopup, GoogleAuthProvider, onAuthStateChanged, signOut } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-auth.js";
 
         const firebaseConfig = {
             apiKey: "AIzaSyCM74giCqX1S-ofyr0qMhDXplWipXVkVaM",
@@ -143,7 +135,39 @@
 
         const app = initializeApp(firebaseConfig);
         const db = getDatabase(app);
+        const auth = getAuth(app);
+        const provider = new GoogleAuthProvider();
 
+        // --- AUTH LOGIC ---
+        onAuthStateChanged(auth, (user) => {
+            const profileArea = document.getElementById('profileContent');
+            if (user) {
+                profileArea.innerHTML = `
+                    <div class="profile-card">
+                        <img src="${user.photoURL}" class="profile-img">
+                        <div class="user-name">${user.displayName}</div>
+                        <div class="user-email">${user.email}</div>
+                        <button class="logout-btn" onclick="window.userLogout()">Logout Account</button>
+                    </div>
+                `;
+            } else {
+                profileArea.innerHTML = `
+                    <div class="profile-card">
+                        <i class="fa fa-user-circle" style="font-size: 80px; color: #333; margin-bottom: 20px;"></i>
+                        <p style="color: #888; font-size: 14px; margin-bottom: 25px;">Login to access premium features and bookmarks.</p>
+                        <button class="login-google-btn" onclick="window.userLogin()">
+                            <img src="https://upload.wikimedia.org/wikipedia/commons/c/c1/Google_%22G%22_logo.svg" width="20">
+                            Login with Google
+                        </button>
+                    </div>
+                `;
+            }
+        });
+
+        window.userLogin = () => signInWithPopup(auth, provider).catch(e => alert(e.message));
+        window.userLogout = () => confirm("Logout now?") && signOut(auth);
+
+        // --- APP LOGIC ---
         window.allMovies = [];
         window.allChannels = [];
         let sliders = [], categories = [], globalLimit = 10;
@@ -164,26 +188,14 @@
             }
         });
 
-        // --- UNIVERSAL PLAYER WITH QUALITY & SPEED ---
         function startUniversalPlayer(wrapperId, url, type) {
-            if (type === 'live') {
-                if (livePlayer) { livePlayer.destroy(); livePlayer = null; }
-                if (hlsLive) { hlsLive.destroy(); hlsLive = null; }
-            } else {
-                if (moviePlayer) { moviePlayer.destroy(); moviePlayer = null; }
-                if (hlsMovie) { hlsMovie.destroy(); hlsMovie = null; }
-            }
+            if (type === 'live') { if (livePlayer) { livePlayer.destroy(); livePlayer = null; } if (hlsLive) { hlsLive.destroy(); hlsLive = null; } } 
+            else { if (moviePlayer) { moviePlayer.destroy(); moviePlayer = null; } if (hlsMovie) { hlsMovie.destroy(); hlsMovie = null; } }
 
             const container = document.getElementById(wrapperId);
             container.innerHTML = `<video id="${type}Vid" playsinline controls style="width:100%"></video>`;
             const videoElem = document.getElementById(`${type}Vid`);
-
-            // Quality & Speed Settings
-            const cfg = { 
-                controls: ['play-large', 'play', 'progress', 'current-time', 'mute', 'volume', 'settings', 'fullscreen'],
-                settings: ['quality', 'speed'],
-                speed: { selected: 1, options: [0.5, 0.75, 1, 1.25, 1.5, 2] }
-            };
+            const cfg = { controls: ['play-large', 'play', 'progress', 'current-time', 'mute', 'volume', 'settings', 'fullscreen'], settings: ['quality', 'speed'], speed: { selected: 1, options: [0.5, 0.75, 1, 1.25, 1.5, 2] } };
 
             const isYT = url.includes('youtube.com') || url.includes('youtu.be');
             const isHLS = url.includes('.m3u8');
@@ -196,36 +208,14 @@
                 if (Hls.isSupported()) {
                     const hls = new Hls();
                     if (type === 'live') hlsLive = hls; else hlsMovie = hls;
-                    hls.loadSource(url);
-                    hls.attachMedia(videoElem);
-                    hls.on(Hls.Events.MANIFEST_PARSED, function (event, data) {
+                    hls.loadSource(url); hls.attachMedia(videoElem);
+                    hls.on(Hls.Events.MANIFEST_PARSED, function () {
                         const availableQualities = hls.levels.map((l) => l.height);
-                        cfg.quality = {
-                            default: availableQualities[0],
-                            options: availableQualities,
-                            forced: true,
-                            onChange: (e) => {
-                                hls.levels.forEach((level, levelIndex) => {
-                                    if (level.height === e) hls.currentLevel = levelIndex;
-                                });
-                            }
-                        };
-                        const p = new Plyr(videoElem, cfg);
-                        if (type === 'live') livePlayer = p; else moviePlayer = p;
-                        p.play();
+                        cfg.quality = { default: availableQualities[0], options: availableQualities, forced: true, onChange: (e) => { hls.levels.forEach((l, i) => { if (l.height === e) hls.currentLevel = i; }); } };
+                        const p = new Plyr(videoElem, cfg); if (type === 'live') livePlayer = p; else moviePlayer = p; p.play();
                     });
-                } else {
-                    videoElem.src = url;
-                    const p = new Plyr(videoElem, cfg);
-                    if (type === 'live') livePlayer = p; else moviePlayer = p;
-                    p.play();
-                }
-            } else {
-                videoElem.src = url;
-                const p = new Plyr(videoElem, cfg);
-                if (type === 'live') livePlayer = p; else moviePlayer = p;
-                p.play();
-            }
+                } else { videoElem.src = url; const p = new Plyr(videoElem, cfg); if (type === 'live') livePlayer = p; else moviePlayer = p; p.play(); }
+            } else { videoElem.src = url; const p = new Plyr(videoElem, cfg); if (type === 'live') livePlayer = p; else moviePlayer = p; p.play(); }
         }
 
         window.playLive = (url) => { startUniversalPlayer('livePlayerWrapper', url, 'live'); window.scrollTo({top:0, behavior:'smooth'}); };
@@ -237,25 +227,19 @@
             startUniversalPlayer('moviePlayerWrapper', m.url, 'movie');
         };
 
-        // --- SEARCH LOGIC (Movies + Channels) ---
         window.doSearch = (query) => {
             const q = query.toLowerCase().trim();
             const grid = document.getElementById('searchGrid');
             if (!q) { grid.innerHTML = ""; return; }
             let html = "";
             const fChannels = window.allChannels.filter(c => (c.name || c.title || "").toLowerCase().includes(q));
-            fChannels.forEach(c => {
-                html += `<div style="display:flex; flex-direction:column; align-items:center; gap:5px;"><div class="live-item" style="width:85px; height:85px; margin:0;" onclick="window.playLiveFromSearch('${c.url}')"><img src="${c.thumb}"></div><p style="font-size:10px; color:var(--primary); text-align:center;">${c.name || c.title}</p></div>`;
-            });
+            fChannels.forEach(c => { html += `<div style="display:flex; flex-direction:column; align-items:center; gap:5px;"><div class="live-item" style="width:85px; height:85px; margin:0;" onclick="window.playLiveFromSearch('${c.url}')"><img src="${c.thumb}"></div><p style="font-size:10px; color:var(--primary); text-align:center;">${c.name || c.title}</p></div>`; });
             const fMovies = window.allMovies.filter(m => (m.title || m.name || "").toLowerCase().includes(q));
-            fMovies.forEach(m => {
-                html += `<div class="card-rect" style="min-width:unset" onclick="window.playMovie('${m.id}')"><img src="${m.thumb}"><p>${m.title || m.name}</p></div>`;
-            });
+            fMovies.forEach(m => { html += `<div class="card-rect" style="min-width:unset" onclick="window.playMovie('${m.id}')"><img src="${m.thumb}"><p>${m.title || m.name}</p></div>`; });
             grid.innerHTML = html || '<p style="grid-column: span 3; text-align:center; padding:50px;">No results found.</p>';
         };
 
         window.playLiveFromSearch = (url) => { window.showNav('livePage', document.querySelectorAll('.nav-item')[1]); window.playLive(url); };
-
         window.showNav = (id, el) => {
             document.querySelectorAll('.page, .full-page').forEach(p => p.style.display = 'none');
             document.getElementById(id).style.display = 'block';
@@ -263,7 +247,6 @@
             if(el) el.classList.add('active');
             if (id !== 'livePage' && livePlayer) livePlayer.pause();
         };
-
         window.closePlayer = () => { document.getElementById('videoPage').style.display = 'none'; if(moviePlayer) moviePlayer.destroy(); moviePlayer = null; };
         window.backToHome = () => window.showNav('homePage', document.querySelector('.nav-item:first-child'));
         
@@ -282,14 +265,14 @@
         function initSlider() {
             const track = document.getElementById('sliderTrack');
             const dots = document.getElementById('sliderDots');
-            if (!sliders.length) return;
+            if (!sliders.length || !track) return;
             track.innerHTML = sliders.map(s => `<div class="slide"><img src="${s.img}"><div class="slide-overlay"></div></div>`).join('');
             dots.innerHTML = sliders.map((_, i) => `<div class="dot ${i===0?'active':''}"></div>`).join('');
             let idx = 0;
             if(window.sliderInterval) clearInterval(window.sliderInterval);
             window.sliderInterval = setInterval(() => {
                 idx = (idx + 1) % sliders.length;
-                track.style.transform = `translateX(-${idx * 100}%)`;
+                if(track) track.style.transform = `translateX(-${idx * 100}%)`;
                 document.querySelectorAll('.dot').forEach((d, i) => d.classList.toggle('active', i === idx));
             }, 4000);
         }
