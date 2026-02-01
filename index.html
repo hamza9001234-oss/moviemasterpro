@@ -1,2 +1,368 @@
-fyffycchccccucccyg
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>Movie Master - Pro</title>
+    
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;600&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+    <link rel="stylesheet" href="https://cdn.plyr.io/3.7.8/plyr.css" />
+    <script src="https://cdn.jsdelivr.net/npm/hls.js@latest"></script>
+    <script src="https://cdn.plyr.io/3.7.8/plyr.js"></script>
+
+    <style>
+        :root { --primary: #e50914; --bg: #000; --card: #121212; --text: #fff; --plyr-color-main: #e50914; --border: #222; }
+        * { box-sizing: border-box; outline: none; -webkit-tap-highlight-color: transparent; }
+        body { font-family: 'Poppins', sans-serif; background: var(--bg); color: var(--text); margin: 0; padding-bottom: 80px; overflow-x: hidden; }
+        
+        header { padding: 0 15px; display: flex; align-items: center; background: rgba(0,0,0,0.9); position: sticky; top: 0; z-index: 1000; height: 60px; border-bottom: 1px solid var(--border); }
+        .logo { color: var(--primary); font-weight: 700; font-size: 20px; letter-spacing: 1px; }
+
+        /* SLIDER */
+        .slider-container { width: 100%; height: 210px; position: relative; overflow: hidden; background: #000; }
+        .slider-track { display: flex; transition: transform 0.6s ease; height: 100%; }
+        .slide { min-width: 100%; height: 100%; position: relative; }
+        .slide img { width: 100%; height: 100%; object-fit: cover; }
+        .slider-dots { position: absolute; bottom: 15px; left: 50%; transform: translateX(-50%); display: flex; gap: 6px; z-index: 10; }
+        .dot { width: 6px; height: 6px; background: rgba(255,255,255,0.3); border-radius: 50%; }
+        .dot.active { background: var(--primary); width: 16px; border-radius: 10px; transition: 0.3s; }
+
+        /* SECTIONS */
+        .section-header { display: flex; justify-content: space-between; align-items: center; padding: 0 15px; margin-top: 25px; }
+        .section-title { font-size: 14px; border-left: 3px solid var(--primary); padding-left: 10px; font-weight: 600; text-transform: uppercase; }
+        .view-all-btn { font-size: 11px; color: var(--primary); cursor: pointer; font-weight: 600; background: rgba(229, 9, 20, 0.1); padding: 4px 10px; border-radius: 4px; }
+        .movie-scroll { display: flex; gap: 12px; overflow-x: auto; padding: 15px; scrollbar-width: none; }
+        .card-rect { min-width: 110px; border-radius: 8px; overflow: hidden; background: var(--card); border: 1px solid var(--border); flex-shrink: 0; }
+        .card-rect img { width: 100%; height: 160px; object-fit: cover; }
+        .card-rect p { margin: 6px; font-size: 10px; text-align: center; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; color: #fff; }
+
+        /* PLAYER PAGE & DESCRIPTION */
+        .movie-details-container { display: flex; padding: 15px; gap: 15px; background: #080808; border-top: 1px solid #222; }
+        .movie-poster-box { flex: 0 0 110px; height: 160px; border-radius: 8px; overflow: hidden; border: 1px solid #333; }
+        .movie-poster-box img { width: 100%; height: 100%; object-fit: cover; }
+        .movie-info-box { flex: 1; }
+        .movie-info-box h2 { margin: 0 0 5px 0; font-size: 16px; color: var(--primary); font-weight: 600; }
+        .movie-info-box p { margin: 0; font-size: 11px; color: #aaa; line-height: 1.5; text-align: left; }
+
+        /* LIVE GRID */
+        @keyframes rotateBorder { 0% { transform: rotate(0deg); } 100% { transform: rotate(360deg); } }
+        .live-grid-container { display: grid; grid-template-columns: repeat(4, 1fr); gap: 12px; padding: 15px; }
+        .live-item { position: relative; aspect-ratio: 1/1; border-radius: 50%; display: flex; align-items: center; justify-content: center; background: #000; overflow: hidden; cursor: pointer; }
+        .live-item::before { content: ""; position: absolute; width: 150%; height: 150%; background: conic-gradient(#ff0000, #ff7300, #fffb00, #48ff00, #00ffd5, #002bff, #7a00ff, #ff00c8, #ff0000); animation: rotateBorder 3s linear infinite; }
+        .live-item img { width: 90%; height: 90%; object-fit: cover; border-radius: 50%; z-index: 1; background: #000; }
+
+        /* AUTH FORMS */
+        .auth-box { padding: 40px 20px; text-align: center; }
+        .auth-input { width: 100%; padding: 12px; margin-bottom: 10px; background: #1a1a1a; border: 1px solid #333; color: white; border-radius: 8px; }
+        .auth-btn { width: 100%; padding: 12px; background: var(--primary); color: white; border: none; border-radius: 8px; font-weight: 600; cursor: pointer; margin-top: 10px; }
+        .auth-toggle { margin-top: 15px; color: #888; font-size: 13px; cursor: pointer; }
+
+        /* PAGES */
+        .full-page { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: var(--bg); z-index: 2000; display: none; overflow-y: auto; padding-bottom: 80px; }
+        .page-header { padding: 15px; display: flex; align-items: center; gap: 15px; background: #000; border-bottom: 1px solid #222; height: 60px; position: sticky; top: 0; z-index: 2100; }
+        .movie-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 10px; padding: 15px; }
+
+        /* BOTTOM NAV */
+        .bottom-nav { position: fixed; bottom: 0; width: 100%; background: #000; display: flex; justify-content: space-around; padding: 10px 0; border-top: 1px solid var(--border); z-index: 1500; height: 70px; }
+        .nav-item { text-align: center; color: #666; font-size: 10px; flex: 1; display: flex; flex-direction: column; align-items: center; justify-content: center; cursor: pointer; }
+        .nav-item.active { color: var(--primary); }
+        .nav-item i { font-size: 18px; margin-bottom: 4px; }
+
+        #loader { position: fixed; top:0; left:0; width:100%; height:100%; background:#000; z-index:9999; display:flex; justify-content:center; align-items:center; }
+    </style>
+</head>
+<body>
+
+    <div id="loader"><i class="fa fa-spinner fa-spin" style="color:var(--primary); font-size:30px;"></i></div>
+
+    <header><div class="logo">MOVIE MASTER</div></header>
+
+    <!-- HOME PAGE -->
+    <div id="homePage" class="page">
+        <div class="slider-container">
+            <div class="slider-track" id="sliderTrack"></div>
+            <div class="slider-dots" id="sliderDots"></div>
+        </div>
+        <div id="homeSections"></div>
+    </div>
+
+    <!-- LIVE TV PAGE -->
+    <div id="livePage" class="page" style="display:none; flex-direction:column; height: calc(100vh - 70px);">
+        <div id="livePlayerWrapper" style="width:100%; aspect-ratio:16/9; background:#000; position:sticky; top:0; z-index:1001; border-bottom:1px solid #222;">
+            <div style="height:100%; display:flex; align-items:center; justify-content:center; color:#555;">Select a Channel</div>
+        </div>
+        <div style="flex:1; overflow-y:auto; padding-bottom:20px;">
+            <div class="section-header"><div class="section-title">Live Channels</div></div>
+            <div class="live-grid-container" id="liveChannelGrid"></div>
+        </div>
+    </div>
+
+    <!-- SEARCH PAGE -->
+    <div id="searchPage" class="full-page">
+        <div class="page-header">
+            <i class="fa fa-arrow-left" onclick="window.backToHome()"></i>
+            <input type="text" id="searchInput" placeholder="Search Movies or Channels..." style="flex:1; background:#111; border:1px solid #333; color:white; padding:10px; border-radius:8px;" oninput="window.doSearch(this.value)">
+        </div>
+        <!-- Both Channels and Movies will show here -->
+        <div id="searchGrid" class="movie-grid"></div>
+    </div>
+
+    <!-- PROFILE PAGE -->
+    <div id="profilePage" class="full-page">
+        <div class="page-header"><i class="fa fa-arrow-left" onclick="window.backToHome()"></i> <span>My Account</span></div>
+        <div id="profileContent"></div>
+    </div>
+
+    <!-- VIEW ALL PAGE -->
+    <div id="viewAllPage" class="full-page">
+        <div class="page-header"><i class="fa fa-arrow-left" onclick="window.backToHome()"></i> <span id="viewAllTitle">Category</span></div>
+        <div class="movie-grid" id="viewAllGrid"></div>
+    </div>
+
+    <!-- MOVIE PLAYER PAGE -->
+    <div id="videoPage" class="full-page" style="z-index:3000;">
+        <div class="page-header"><i class="fa fa-arrow-left" onclick="window.closePlayer()"></i> <span id="playingTitle">Playing</span></div>
+        <div id="moviePlayerWrapper" style="width:100%; aspect-ratio:16/9; background:#000;"></div>
+        
+        <div class="movie-details-container">
+            <div class="movie-poster-box">
+                <img id="detailPoster" src="">
+            </div>
+            <div class="movie-info-box">
+                <h2 id="detailTitle"></h2>
+                <p id="detailDesc"></p>
+            </div>
+        </div>
+    </div>
+
+    <!-- BOTTOM NAVIGATION -->
+    <div class="bottom-nav">
+        <div class="nav-item active" onclick="window.showNav('homePage', this)"><i class="fa fa-home"></i>Home</div>
+        <div class="nav-item" onclick="window.showNav('livePage', this)"><i class="fa fa-tv"></i>Live TV</div>
+        <div class="nav-item" onclick="window.showNav('searchPage', this)"><i class="fa fa-search"></i>Search</div>
+        <div class="nav-item" onclick="window.showNav('profilePage', this)"><i class="fa fa-user"></i>Profile</div>
+    </div>
+
+    <script type="module">
+        import { initializeApp } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-app.js";
+        import { getDatabase, ref, onValue } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-database.js";
+        import { getAuth, createUserWithEmailAndPassword, signInWithEmailAndPassword, onAuthStateChanged, signOut } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-auth.js";
+
+        const firebaseConfig = {
+            apiKey: "AIzaSyCM74giCqX1S-ofyr0qMhDXplWipXVkVaM",
+            authDomain: "movie-master-pro-21287.firebaseapp.com",
+            databaseURL: "https://movie-master-pro-21287-default-rtdb.firebaseio.com",
+            projectId: "movie-master-pro-21287",
+            storageBucket: "movie-master-pro-21287.firebasestorage.app",
+            messagingSenderId: "613745335466",
+            appId: "1:613745335466:web:06b7c404547e65dfe4c4d3"
+        };
+
+        const app = initializeApp(firebaseConfig);
+        const db = getDatabase(app);
+        const auth = getAuth(app);
+
+        // --- AUTH SYSTEM ---
+        let isLoginMode = true;
+        window.toggleAuth = () => { isLoginMode = !isLoginMode; renderAuthUI(); };
+
+        onAuthStateChanged(auth, (user) => {
+            const area = document.getElementById('profileContent');
+            if (user) {
+                area.innerHTML = `
+                    <div class="auth-box">
+                        <i class="fa fa-user-circle" style="font-size:70px;color:var(--primary);"></i>
+                        <h3 style="margin-top:15px;">${user.email}</h3>
+                        <p style="color:#666; font-size:12px;">Premium Member</p>
+                        <button class="auth-btn" style="background:#222; margin-top:30px;" id="logoutBtn">Logout Account</button>
+                    </div>`;
+                document.getElementById('logoutBtn').onclick = () => signOut(auth);
+            } else { renderAuthUI(); }
+        });
+
+        function renderAuthUI() {
+            document.getElementById('profileContent').innerHTML = `
+                <div class="auth-box">
+                    <h2>${isLoginMode ? 'Login' : 'Sign Up'}</h2>
+                    <input type="email" id="authEmail" class="auth-input" placeholder="Email Address">
+                    <input type="password" id="authPass" class="auth-input" placeholder="Password">
+                    <button class="auth-btn" id="authActionBtn">${isLoginMode ? 'Login Now' : 'Create Account'}</button>
+                    <p class="auth-toggle" onclick="window.toggleAuth()">${isLoginMode ? "Need an account? Sign Up" : "Have an account? Login"}</p>
+                </div>`;
+            
+            document.getElementById('authActionBtn').onclick = () => {
+                const e = document.getElementById('authEmail').value, p = document.getElementById('authPass').value;
+                if(!e || !p) return alert("Please fill all fields");
+                if(isLoginMode) signInWithEmailAndPassword(auth, e, p).catch(err => alert(err.message));
+                else createUserWithEmailAndPassword(auth, e, p).catch(err => alert(err.message));
+            };
+        }
+
+        // --- CORE DATA & LIMIT ---
+        window.allMovies = []; window.allChannels = [];
+        let sliders = [], categories = [];
+        window.globalLimit = 10; 
+        let livePlayer = null, moviePlayer = null;
+
+        onValue(ref(db, '/'), (snapshot) => {
+            const data = snapshot.val();
+            if (data) {
+                window.allMovies = data.movies ? Object.values(data.movies) : [];
+                window.allChannels = data.channels ? Object.values(data.channels) : [];
+                sliders = data.sliders ? Object.values(data.sliders) : [];
+                categories = data.categories ? Object.values(data.categories) : [];
+                
+                if (data.settings && data.settings.limit) window.globalLimit = parseInt(data.settings.limit);
+                else if (data.limit) window.globalLimit = parseInt(data.limit);
+
+                renderHome(); initSlider(); initLiveChannels();
+                document.getElementById('loader').style.display = 'none';
+            }
+        });
+
+        function renderHome() {
+            let html = '';
+            categories.forEach(cat => {
+                const filtered = window.allMovies.filter(m => m.category === cat.name);
+                if (filtered.length > 0) {
+                    const limitedMovies = filtered.slice(0, window.globalLimit);
+                    html += `
+                        <div class="section-header">
+                            <div class="section-title">${cat.name}</div>
+                            <div class="view-all-btn" onclick="window.openViewAll('${cat.name}')">View All</div>
+                        </div>
+                        <div class="movie-scroll">${limitedMovies.map(m => `
+                            <div class="card-rect" onclick="window.playMovie('${m.id}')">
+                                <img src="${m.thumb}">
+                                <p>${m.title}</p>
+                            </div>`).join('')}</div>`;
+                }
+            });
+            document.getElementById('homeSections').innerHTML = html;
+        }
+
+        window.openViewAll = (cat) => {
+            window.showNav('viewAllPage');
+            document.getElementById('viewAllTitle').innerText = cat;
+            const filtered = window.allMovies.filter(m => m.category === cat);
+            document.getElementById('viewAllGrid').innerHTML = filtered.map(m => `
+                <div class="card-rect" style="min-width:unset" onclick="window.playMovie('${m.id}')">
+                    <img src="${m.thumb}">
+                    <p>${m.title}</p>
+                </div>`).join('');
+        };
+
+        // --- UPDATED SEARCH SYSTEM (SEARCH ALL TOGETHER) ---
+        window.doSearch = (query) => {
+            const q = query.toLowerCase().trim();
+            const grid = document.getElementById('searchGrid');
+            if(!q) { grid.innerHTML = ""; return; }
+            
+            let html = "";
+
+            // 1. Search Channels
+            const filteredChannels = window.allChannels.filter(c => 
+                (c.name || c.title || "").toLowerCase().includes(q)
+            );
+            filteredChannels.forEach(c => {
+                html += `
+                <div style="text-align:center;">
+                    <div class="live-item" style="width:80px;height:80px;margin:auto;" onclick="window.playLive('${c.url}'); window.showNav('livePage')">
+                        <img src="${c.thumb}">
+                    </div>
+                    <p style="font-size:10px;margin-top:5px;color:#fff;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;">${c.name || c.title}</p>
+                </div>`;
+            });
+
+            // 2. Search Movies
+            const filteredMovies = window.allMovies.filter(m => 
+                (m.title || m.name || "").toLowerCase().includes(q)
+            );
+            filteredMovies.forEach(m => {
+                html += `
+                <div class="card-rect" style="min-width:unset" onclick="window.playMovie('${m.id}')">
+                    <img src="${m.thumb}">
+                    <p>${m.title || m.name}</p>
+                </div>`;
+            });
+
+            grid.innerHTML = html || '<p style="grid-column:span 3;text-align:center;color:#666;padding:20px;">No matching results found.</p>';
+        };
+
+        // --- PLAYER SYSTEM ---
+        window.playMovie = (id) => {
+            const m = window.allMovies.find(x => x.id == id);
+            if(!m) return;
+            document.getElementById('videoPage').style.display = 'block';
+            document.getElementById('playingTitle').innerText = m.title;
+            
+            document.getElementById('detailPoster').src = m.thumb;
+            document.getElementById('detailTitle').innerText = m.title;
+            document.getElementById('detailDesc').innerText = m.desc || m.description || "Enjoy watching this exclusive content on Movie Master Pro.";
+
+            startPlayer('moviePlayerWrapper', m.url, false);
+        };
+
+        function startPlayer(wrapperId, url, isLive) {
+            const container = document.getElementById(wrapperId);
+            container.innerHTML = `<video id="${isLive?'l':'m'}Vid" playsinline controls style="width:100%"></video>`;
+            const video = document.getElementById(`${isLive?'l':'m'}Vid`);
+            const cfg = { controls: ['play-large', 'play', 'progress', 'current-time', 'mute', 'volume', 'settings', 'fullscreen'] };
+
+            if (url.includes('youtube.com') || url.includes('youtu.be')) {
+                const p = new Plyr(video, cfg);
+                p.source = { type: 'video', sources: [{ src: url, provider: 'youtube' }] };
+                if(isLive) livePlayer = p; else moviePlayer = p;
+            } else if (url.includes('.m3u8') && Hls.isSupported()) {
+                const hls = new Hls(); hls.loadSource(url); hls.attachMedia(video);
+                hls.on(Hls.Events.MANIFEST_PARSED, () => {
+                    const p = new Plyr(video, cfg); p.play(); if(isLive) livePlayer = p; else moviePlayer = p;
+                });
+            } else {
+                video.src = url; const p = new Plyr(video, cfg); p.play(); if(isLive) livePlayer = p; else moviePlayer = p;
+            }
+        }
+
+        // --- UI HELPERS ---
+        window.showNav = (id, el) => {
+            document.querySelectorAll('.page, .full-page').forEach(p => p.style.display = 'none');
+            const target = document.getElementById(id);
+            target.style.display = id === 'livePage' ? 'flex' : 'block';
+            if(el) {
+                document.querySelectorAll('.nav-item').forEach(n => n.classList.remove('active'));
+                el.classList.add('active');
+            }
+            if (id !== 'livePage' && livePlayer) livePlayer.pause();
+        };
+
+        window.closePlayer = () => { 
+            document.getElementById('videoPage').style.display = 'none'; 
+            if(moviePlayer) moviePlayer.destroy(); 
+        };
+
+        window.backToHome = () => window.showNav('homePage', document.querySelector('.nav-item'));
+
+        function initSlider() {
+            const track = document.getElementById('sliderTrack'), dots = document.getElementById('sliderDots');
+            if(!sliders.length) return;
+            track.innerHTML = sliders.map(s => `<div class="slide"><img src="${s.img}"></div>`).join('');
+            dots.innerHTML = sliders.map((_, i) => `<div class="dot ${i===0?'active':''}"></div>`).join('');
+            let idx = 0; if(window.si) clearInterval(window.si);
+            window.si = setInterval(() => {
+                idx = (idx + 1) % sliders.length;
+                track.style.transform = `translateX(-${idx * 100}%)`;
+                document.querySelectorAll('.dot').forEach((d, i) => d.classList.toggle('active', i === idx));
+            }, 4000);
+        }
+
+        function initLiveChannels() {
+            document.getElementById('liveChannelGrid').innerHTML = window.allChannels.map(c => `
+                <div class="live-item" onclick="window.playLive('${c.url}')"><img src="${c.thumb}"></div>`).join('');
+        }
+        window.playLive = (url) => startPlayer('livePlayerWrapper', url, true);
+    </script>
+</body>
+</html>
+
 
